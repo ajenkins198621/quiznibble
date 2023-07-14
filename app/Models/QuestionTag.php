@@ -8,4 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class QuestionTag extends Model
 {
     use HasFactory;
+
+    public $timestamps = false;
+
 }

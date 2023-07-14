@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->string('question');
+            $table->longText('media')->nullable();
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('question_type_id');
             $table->longText('hint')->nullable();
