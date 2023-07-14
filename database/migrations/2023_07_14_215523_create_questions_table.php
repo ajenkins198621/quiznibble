@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('question');
             $table->unsignedBigInteger('category_id');
             $table->unsignedBigInteger('question_type_id');
+            $table->longText('hint')->nullable();
             $table->timestamps();
         });
 
