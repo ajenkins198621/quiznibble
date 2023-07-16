@@ -18,6 +18,8 @@
         <a href="/create-question">Create Question</a>
         |
         <a href="/view-questions">View Questions</a>
+        |
+        <a href="/quiz-ideas">Question Ideas</a>
         @yield('content')
     </div>
     </div>

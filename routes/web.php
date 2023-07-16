@@ -102,3 +102,39 @@ Route::get('/view-questions', function () {
         'questions' => $questions,
     ]);
 })->name('view-questions');
+
+Route::get('/quiz-ideas', function () {
+    $quizIdeas = \App\Models\QuizIdea::get();
+    return view('quiz-ideas', [
+        'quizIdeas' => $quizIdeas,
+    ]);
+})->name('quiz-ideas');
+
+Route::post('create-quiz-idea', function (Request $request) {
+    $validator = Validator::make($request->all(), [
+        'idea' => 'required|string',
+    ]);
+    if ($validator->fails()) {
+        dd($validator->errors());
+    }
+
+    $quizIdea = new \App\Models\QuizIdea();
+    $quizIdea->idea = $request->idea;
+    $quizIdea->save();
+
+    return redirect('/quiz-ideas')->with('status', 'Quiz idea saved successfully!');
+});
+
+Route::delete('delete-quiz-idea', function (Request $request) {
+    $validator = Validator::make($request->all(), [
+        'quiz_idea_id' => 'required|exists:quiz_ideas,id',
+    ]);
+    if ($validator->fails()) {
+        dd($validator->errors());
+    }
+
+    $quizIdea = \App\Models\QuizIdea::find($request->quiz_idea_id);
+    $quizIdea->delete();
+
+    return redirect('/quiz-ideas')->with('status', 'Quiz idea deleted successfully!');
+})->name('delete-quiz-idea');
