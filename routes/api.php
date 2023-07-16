@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Category;
+use App\Models\User;
+use App\Models\UserQuestionResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +39,40 @@ Route::get('/get-categories', function(Request $request) {
 
 
 Route::get('get-quiz', function(Request $request) {
+
+    function getQuestionIds(User $user) {
+        // Step 1: Get 4 questions user hasn't answered before
+        $newQuestions = \App\Models\Question::select('id')->whereNotIn('id', function($query) use ($user) {
+            $query->select('question_id')
+                ->from('user_question_responses')
+                ->where('user_id', $user->id);
+        })->inRandomOrder()->limit(4)->get();
+
+        // Get the IDs of the 4 worst-answered questions
+        $worstQuestionIds = UserQuestionResponse::where('user_id', $user->id)
+            ->select('question_id')
+            ->selectRaw('(correct_count / attempt_count) as success_rate')
+            ->orderBy('success_rate', 'asc')
+            ->limit(5)
+            ->pluck('question_id');
+
+        // Get the Question models for these IDs
+        $poorlyAnsweredQuestions = \App\Models\Question::whereIn('id', $worstQuestionIds)->get();
+
+
+        // Step 3: Get the remaining questions at random
+        $randomQuestions = \App\Models\Question::select('id')->whereNotIn('id', $newQuestions->pluck('id')->concat($poorlyAnsweredQuestions->pluck('id')))
+            ->inRandomOrder()
+            ->limit(12 - $newQuestions->count() - $poorlyAnsweredQuestions->count())
+            ->get();
+
+        // Combine all questions
+        $quizQuestions = $poorlyAnsweredQuestions->concat($newQuestions)->concat($randomQuestions);
+
+        return $quizQuestions->pluck('id');
+    }
+
+
     $questions = \App\Models\Question::select([
         'id',
         'question',
@@ -51,8 +87,7 @@ Route::get('get-quiz', function(Request $request) {
         'questionType:id,question_type',
         'tags:id,tag_name',
     ])
-    ->inRandomOrder() // TODO This needs to be an algorithm
-    ->limit(3) // TODO Make this an option
+    ->whereIn('id', getQuestionIds(User::find(1)))
     ->get();
     return response()->json($questions);
 });
