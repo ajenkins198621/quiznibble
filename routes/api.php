@@ -34,3 +34,25 @@ Route::get('/get-categories', function(Request $request) {
         ->get();
     return response()->json($categories);
 });
+
+
+Route::get('get-quiz', function(Request $request) {
+    $questions = \App\Models\Question::select([
+        'id',
+        'question',
+        'category_id',
+        'question_type_id',
+        'hint',
+    ])
+    ->with([
+        'answers:id,question_id,answer,is_correct',
+        'category:id,parent_id,category_name',
+        'category.parent:id,parent_id,category_name',
+        'questionType:id,question_type',
+        'tags:id,tag_name',
+    ])
+    ->inRandomOrder() // TODO This needs to be an algorithm
+    ->limit(15) // TODO Make this an option
+    ->get();
+    return response()->json($questions);
+});

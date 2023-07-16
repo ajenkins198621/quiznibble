@@ -9,9 +9,9 @@
 
                 <div class="card-body">
                     @if (session('status'))
-                        <div class="alert alert-success">
-                            {{ session('status') }}
-                        </div>
+                    <div class="alert alert-success">
+                        {{ session('status') }}
+                    </div>
                     @endif
                     <form method="POST" action="/create-quiz-idea">
                         @csrf
@@ -38,21 +38,29 @@
                             </thead>
                             <tbody>
                                 @foreach($quizIdeas as $quizIdea)
-                                    <tr>
-                                        <td>{{ $quizIdea->idea }}</td>
-                                        <td>
-                                            <form method="POST" action="/delete-quiz-idea">
-                                                @csrf
-                                                @method('DELETE')
-                                                <input name='quiz_idea_id' type='hidden' value='{{ $quizIdea->id }}'>
-                                                <button type="submit" class="btn btn-danger">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td>{{ $quizIdea->idea }}</td>
+                                    <td>
+                                        <form method="POST" action="/delete-quiz-idea">
+                                            @csrf
+                                            @method('DELETE')
+                                            <input name='quiz_idea_id' type='hidden' value='{{ $quizIdea->id }}'>
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+            <br>
+            <div class="card">
+                <div class="card-header">ChatGPT Prompts</div>
+
+                <div class="card-body">
+                    Coming Soon!
                 </div>
             </div>
         </div>
