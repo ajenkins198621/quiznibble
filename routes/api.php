@@ -52,7 +52,46 @@ Route::get('get-quiz', function(Request $request) {
         'tags:id,tag_name',
     ])
     ->inRandomOrder() // TODO This needs to be an algorithm
-    ->limit(15) // TODO Make this an option
+    ->limit(3) // TODO Make this an option
     ->get();
     return response()->json($questions);
+});
+
+Route::post('answer-quiz', function(Request $request) {
+    $data = $request->validate([
+        'answers' => 'required|array',
+        'answers.*.question_id' => 'required|exists:questions,id',
+        'answers.*.is_correct' => 'required|boolean',
+    ]);
+
+    foreach ($data['answers'] as $answer) {
+        $existing = \App\Models\UserQuestionResponse::where([
+            'user_id' => 1, // TODO move to actual user
+            'question_id' => $answer['question_id']
+        ])->first();
+        if($existing) {
+            $newCorrectCount = $answer['is_correct'] ? $existing->correct_count + 1 : $existing->correct_count;
+            $newIncorrectCount = $answer['is_correct'] ? $existing->incorrect_count : $existing->incorrect_count + 1;
+            $newAttemptCount = $existing->attempt_count + 1;
+            $existing->update([
+                'correct_count' => $newCorrectCount,
+                'incorrect_count' => $newIncorrectCount,
+                'attempt_count' => $newAttemptCount,
+            ]);
+        } else {
+            \App\Models\UserQuestionResponse::create([
+                'user_id' => 1, // TODO move to actual user
+                'question_id' => $answer['question_id'],
+                'correct_count' => $answer['is_correct'] ? 1 : 0,
+                'incorrect_count' => $answer['is_correct'] ? 0 : 1,
+                'attempt_count' => 1,
+            ]);
+        }
+
+    }
+
+    // Return a response indicating success
+    return response()->json(['message' => 'Responses saved successfully.', 201]);
+
+
 });
