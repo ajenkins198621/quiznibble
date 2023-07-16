@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Validator;
 */
 
 Route::get('/', function () {
-    return 'As of now, this application is only an API. Please use the API endpoints to interact with the application. You can <a href="/create-questions">Add a question</a> here.';
+    return 'As of now, this application is only an API. Please use the API endpoints to interact with the application. You can <a href="/create-question">Add a question</a> here.';
 });
 
 Route::get('/create-question', function () {
