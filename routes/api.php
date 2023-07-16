@@ -79,12 +79,14 @@ Route::post('answer-quiz', function(Request $request) {
                 'attempt_count' => $newAttemptCount,
             ]);
         } else {
-            \App\Models\UserQuestionResponse::create([
+            \App\Models\UserQuestionResponse::insert([
                 'user_id' => 1, // TODO move to actual user
                 'question_id' => $answer['question_id'],
                 'correct_count' => $answer['is_correct'] ? 1 : 0,
                 'incorrect_count' => $answer['is_correct'] ? 0 : 1,
                 'attempt_count' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
