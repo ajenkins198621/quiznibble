@@ -1,65 +1,48 @@
-<!doctype html>
-<html lang="en">
+@extends('layouts.initial-app')
 
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+@section('content')
 
-    <!-- Bootstrap CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+@if (session('status'))
+<div class="alert alert-success">
+    {{ session('status') }}
+</div>
+@endif
 
-    <title>Quiz Builder</title>
-</head>
+<form action="/create-questions" method="POST">
+    @csrf
 
-<body>
-    <div class="container py-5">
-        <h1>Quiz Builder</h1>
-
-        <form action="{{ '/create-questions' }}" method="POST">
-            @csrf
-
-            <div class="form-group">
-                <label for="category1">Category 1</label>
-                <select class="form-control" id="category1" name="category1">
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->category_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="subcategory">Sub Category</label>
-                <select class="form-control" id="subcategory" name="subcategory">
-                    @foreach($sub_categories as $subcategory)
-                        <option value="{{ $subcategory->id }}">{{ $subcategory->category_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="tag">Tag</label>
-                <select class="form-control" id="tag" name="tag">
-                    @foreach($tags as $tag)
-                        <option value="{{ $tag->id }}">{{ $tag->tag_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="json">JSON</label>
-                <textarea class="form-control" id="json" name="json" rows="3"></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
+    <div class="form-group">
+        <label for="category1">Category 1</label>
+        <select class="form-control" id="category_id" name="category_id">
+            @foreach($categories as $category)
+            <option value="{{ $category->id }}">{{ $category->category_name }}</option>
+            @endforeach
+        </select>
     </div>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-</body>
+    <div class="form-group">
+        <label for="subcategory">Sub Category</label>
+        <select class="form-control" id="subcategory_id" name="subcategory_id">
+            @foreach($sub_categories as $subcategory)
+            <option value="{{ $subcategory->id }}">{{ $subcategory->category_name }}</option>
+            @endforeach
+        </select>
+    </div>
 
-</html>
+    <div class="form-group">
+        <label for="tag">Tag</label>
+        <select class="form-control" id="tag_id" name="tag_id">
+            @foreach($tags as $tag)
+            <option value="{{ $tag->id }}">{{ $tag->tag_name }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="json">JSON</label>
+        <textarea class="form-control" id="json" name="json" rows="5"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+@endsection

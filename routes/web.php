@@ -21,60 +21,84 @@ Route::get('/', function () {
     return 'As of now, this application is only an API. Please use the API endpoints to interact with the application. You can <a href="/create-questions">Add a question</a> here.';
 });
 
-Route::get('/create-questions', function () {
+Route::get('/create-question', function () {
     return view('create-questions', [
         'categories' => \App\Models\Category::get(),
         'sub_categories' => \App\Models\Category::whereNotNull('parent_id')->get(),
         'tags' => \App\Models\Tag::get(),
     ]);
-})->name('create-questions');
+});
 
-Route::post('/create-questions', function(Request $request) {
-    $request->validate([
-        'category1' => 'required|exists:categories,id',
-        'subcategory' => 'required|exists:categories,id',
-        'tag' => 'required',
+Route::post('/create-questions', function (Request $request) {
+    $validator = Validator::make($request->all(), [
+        'category_id' => 'required|exists:categories,id',
+        'subcategory_id' => 'required|exists:categories,id',
+        'tag_id' => 'required|exists:tags,id',
         'json' => 'required|json',
     ]);
-        $data = json_decode($request->json, true);
+    if ($validator->fails()) {
+        dd($validator->errors());
+    }
 
-        // Loop through each question to validate the structure
-        foreach ($data as $questionData) {
-            $validator = Validator::make($questionData, [
-                'question' => 'required|string',
-                'options' => 'required|array',
-                'options.*.option' => 'required|string',
-                'options.*.isAnswer' => 'required|boolean',
-                'hint' => 'required|string',
-            ]);
+    $data = json_decode($request->json, true);
 
-            if ($validator->fails()) {
-                return back()->withErrors($validator)->withInput();
-            }
+    // Loop through each question to validate the structure
+    foreach ($data as $questionData) {
+        $validator = Validator::make($questionData, [
+            'question' => 'required|string',
+            'options' => 'required|array',
+            'options.*.option' => 'required|string',
+            'options.*.isAnswer' => 'required|boolean',
+            'hint' => 'required|string',
+        ]);
 
-            // Insert question and options into database
-            $question = new Question();
-            $question->question = $questionData['question'];
-            $question->question_type_id = 1;
-            $question->category_id = $request->category1;
-            $question->hint = $questionData['hint'];
-            $question->save();
-
-            $questionTag = new \App\Models\QuestionTag();
-            $questionTag->question_id = $question->id;
-            $questionTag->tag_id = $request->tag;
-            $questionTag->save();
-
-            foreach ($questionData['options'] as $answerData) {
-                $answer = new Answer();
-                $answer->question_id = $question->id;
-                $answer->answer = $answerData['option'];
-                $answer->is_correct = $answerData['isAnswer'] == "true" ? 1 : 0;
-                $answer->question_id = $question->id;
-                $answer->save();
-            }
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
         }
 
-        return redirect()->route('create-questions')->with('status', 'Quiz saved successfully!');
+        // Insert question and options into database
+        $question = new Question();
+        $question->question = $questionData['question'];
+        $question->question_type_id = 1;
+        $question->category_id = $request->subcategory_id;
+        $question->hint = $questionData['hint'];
+        $question->save();
 
+        $questionTag = new \App\Models\QuestionTag();
+        $questionTag->question_id = $question->id;
+        $questionTag->tag_id = $request->tag_id;
+        $questionTag->save();
+
+        foreach ($questionData['options'] as $answerData) {
+            $answer = new Answer();
+            $answer->question_id = $question->id;
+            $answer->answer = $answerData['option'];
+            $answer->is_correct = $answerData['isAnswer'] == "true" ? 1 : 0;
+            $answer->question_id = $question->id;
+            $answer->save();
+        }
+    }
+
+    return redirect('/create-question')->with('status', 'Quiz saved successfully!');
 });
+
+Route::get('/view-questions', function () {
+    $questions = Question::select([
+        'id',
+        'question',
+        'category_id',
+        'question_type_id',
+        'hint',
+        'created_at',
+    ])
+    ->with([
+        'answers:id,question_id',
+        'category:id,parent_id,category_name',
+        'category.parent:id,parent_id,category_name',
+        'questionType:id,question_type',
+        'tags:id,tag_name',
+    ])->get();
+    return view('view-questions', [
+        'questions' => $questions,
+    ]);
+})->name('view-questions');

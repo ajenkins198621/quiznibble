@@ -18,4 +18,19 @@ class Question extends Model
     {
         return $this->belongsTo(QuestionType::class);
     }
+
+    public function answers()
+    {
+        return $this->hasMany(Answer::class);
+    }
+
+    public function questionTags() {
+        return $this->hasMany(QuestionTag::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'question_tags');
+    }
+
 }
