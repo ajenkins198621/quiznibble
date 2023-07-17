@@ -114,7 +114,7 @@ Route::post('answer-quiz', function(Request $request) {
 
     foreach ($data['answers'] as $answer) {
         $existing = \App\Models\UserQuestionResponse::where([
-            'user_id' => $userId, // TODO move to actual user
+            'user_id' => $userId,
             'question_id' => $answer['question_id']
         ])->first();
         if($existing) {
@@ -128,7 +128,7 @@ Route::post('answer-quiz', function(Request $request) {
             ]);
         } else {
             \App\Models\UserQuestionResponse::insert([
-                'user_id' => 1, // TODO move to actual user
+                'user_id' => $userId,
                 'question_id' => $answer['question_id'],
                 'correct_count' => $answer['is_correct'] ? 1 : 0,
                 'incorrect_count' => $answer['is_correct'] ? 0 : 1,
@@ -141,14 +141,13 @@ Route::post('answer-quiz', function(Request $request) {
     }
 
     // TODO Add this to a listener at some point with an event tied to it
-    (new UserStreakService($userId))->update();
+    $userStreakService = new UserStreakService($userId);
+    $userStreakService->update();
 
     // Return a response indicating success
     return response()->json([
         'message' => 'Responses saved successfully.',
-        'userStreak' => UserStreak::select('user_id', 'streak')
-            ->where('user_id', 1) // TODO move to actual user
-            ->first(),
+        'userStreak' => $userStreakService->getStreak(),
     ], 201);
 
 
