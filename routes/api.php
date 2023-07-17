@@ -3,6 +3,8 @@
 use App\Models\Category;
 use App\Models\User;
 use App\Models\UserQuestionResponse;
+use App\Models\UserStreak;
+use App\Services\UserStreakService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +42,7 @@ Route::get('/get-categories', function(Request $request) {
 
 Route::get('get-quiz', function(Request $request) {
 
+
     function getQuestionIds(User $user) {
         // Step 1: Get 4 questions user hasn't answered before
         $newQuestions = \App\Models\Question::select('id')->whereNotIn('id', function($query) use ($user) {
@@ -53,7 +56,7 @@ Route::get('get-quiz', function(Request $request) {
             ->select('question_id')
             ->selectRaw('(correct_count / attempt_count) as success_rate')
             ->orderBy('success_rate', 'asc')
-            ->limit(5)
+            ->limit(4)
             ->pluck('question_id');
 
         // Get the Question models for these IDs
@@ -61,9 +64,13 @@ Route::get('get-quiz', function(Request $request) {
 
 
         // Step 3: Get the remaining questions at random
-        $randomQuestions = \App\Models\Question::select('id')->whereNotIn('id', $newQuestions->pluck('id')->concat($poorlyAnsweredQuestions->pluck('id')))
+        $NUM_QUESTIONS = 12;
+        $randomQuestions = \App\Models\Question::select('id')
+            ->whereNotIn('id', $newQuestions->pluck('id')
+                ->concat($poorlyAnsweredQuestions->pluck('id'))
+            )
             ->inRandomOrder()
-            ->limit(12 - $newQuestions->count() - $poorlyAnsweredQuestions->count())
+            ->limit($NUM_QUESTIONS - $newQuestions->count() - $poorlyAnsweredQuestions->count())
             ->get();
 
         // Combine all questions
@@ -72,6 +79,7 @@ Route::get('get-quiz', function(Request $request) {
         return $quizQuestions->pluck('id');
     }
 
+    $userId = 1; // TODO move to actual user
 
     $questions = \App\Models\Question::select([
         'id',
@@ -87,9 +95,12 @@ Route::get('get-quiz', function(Request $request) {
         'questionType:id,question_type',
         'tags:id,tag_name',
     ])
-    ->whereIn('id', getQuestionIds(User::find(1)))
+    ->whereIn('id', getQuestionIds(User::find($userId)))
     ->get();
-    return response()->json($questions);
+    return response()->json([
+        'questions' => $questions,
+        'userStreak' => (new UserStreakService($userId))->getStreak(),
+    ]);
 });
 
 Route::post('answer-quiz', function(Request $request) {
@@ -99,9 +110,11 @@ Route::post('answer-quiz', function(Request $request) {
         'answers.*.is_correct' => 'required|boolean',
     ]);
 
+    $userId = 1; // TODO move to actual user
+
     foreach ($data['answers'] as $answer) {
         $existing = \App\Models\UserQuestionResponse::where([
-            'user_id' => 1, // TODO move to actual user
+            'user_id' => $userId, // TODO move to actual user
             'question_id' => $answer['question_id']
         ])->first();
         if($existing) {
@@ -127,8 +140,26 @@ Route::post('answer-quiz', function(Request $request) {
 
     }
 
+    // TODO Add this to a listener at some point with an event tied to it
+    (new UserStreakService($userId))->update();
+
     // Return a response indicating success
-    return response()->json(['message' => 'Responses saved successfully.', 201]);
+    return response()->json([
+        'message' => 'Responses saved successfully.',
+        'userStreak' => UserStreak::select('user_id', 'streak')
+            ->where('user_id', 1) // TODO move to actual user
+            ->first(),
+    ], 201);
 
 
+});
+
+Route::get('/test-update-streak', function(Request $request) {
+    $userId = 1; // TODO move to actual user
+    $userStreakService = new UserStreakService($userId);
+    $userStreakService->update();
+    return response()->json([
+        'message' => 'Streak updated successfully.',
+        'userStreak' => $userStreakService->getStreak(),
+    ], 201);
 });
