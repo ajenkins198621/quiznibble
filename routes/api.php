@@ -3,7 +3,6 @@
 use App\Models\Category;
 use App\Models\User;
 use App\Models\UserQuestionResponse;
-use App\Models\UserStreak;
 use App\Services\UserStreakService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,9 +18,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware('auth:sanctum')
+    ->get('/user', function (Request $request) {
+        return $request->user();
+    });
 
 Route::get('/get-categories', function(Request $request) {
     $categories = Category::select([
