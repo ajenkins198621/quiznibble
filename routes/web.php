@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EditQuestionsController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -28,9 +29,18 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::prefix('dashboard')->middleware(['auth', 'verified'])->group(function () {
+
+    Route::get('/', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+
+    Route::prefix('questions')->group(function() {
+        Route::get('/edit-questions', [EditQuestionsController::class, 'getQuestions'])->name('dashboard.questions.edit-questions');
+        Route::post('/add-question', [EditQuestionsController::class, 'updateQuestion'])->name('dashboard.questions.add-question');
+    });
+
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -38,18 +48,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
-// Route::get('/', function () {
-//     return 'As of now, this application is only an API. Please use the API endpoints to interact with the application. You can <a href="/create-question">Add a question</a> here.';
-// });
-
-Route::get('/create-question', function () {
-    return view('create-questions', [
-        'categories' => \App\Models\Category::get(),
-        'sub_categories' => \App\Models\Category::whereNotNull('parent_id')->get(),
-        'tags' => \App\Models\Tag::get(),
-    ]);
-});
 
 Route::post('/create-questions', function (Request $request) {
     $validator = Validator::make($request->all(), [
@@ -161,9 +159,9 @@ Route::delete('delete-quiz-idea', function (Request $request) {
     return redirect('/quiz-ideas')->with('status', 'Quiz idea deleted successfully!');
 })->name('delete-quiz-idea');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
