@@ -19,7 +19,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
+    'allowed_origins' => [
+        env('FRONTEND_URL', 'http://localhost:3000'),
+        env('QUIZ_URL', 'https://ajenkins1986.github.io')
+    ],
 
     'allowed_origins_patterns' => [],
 
