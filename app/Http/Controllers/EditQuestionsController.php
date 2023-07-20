@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Answer;
+use App\Models\CategoryTag;
 use App\Models\Question;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
@@ -12,15 +14,10 @@ class EditQuestionsController extends Controller
 {
 
     public function getQuestions() {
-        return Inertia::render('EditQuestions/EditQuestions', [
-            'categories' => \App\Models\Category::whereNull('parent_id')->get(),
-            'sub_categories' => \App\Models\Category::whereNotNull('parent_id')
-                ->with('tags')
-                ->get(),
-        ]);
+        return Inertia::render('EditQuestions/EditQuestions', (new \App\Services\GetCategoriesService())->get());
     }
 
-    public function updateQuestion(Request $request) {
+    public function addQuestion(Request $request) : JsonResponse {
 
         $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:categories,id',
@@ -83,9 +80,48 @@ class EditQuestionsController extends Controller
         return response()->json([
             'message' => "Successfully added {$questionCount} questions!"
         ], 201);
+    }
 
 
+    public function addCategoryOrTag (Request $request) : JsonResponse {
+        $validator = Validator::make($request->all(), [
+            'type' => 'in:primaryCategory,subCategory,tag',
+            'parentId' => 'nullable|numeric',
+            'name' => 'nullable|string',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid request',
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
+        $addType = '';
+        if($request->type == 'primaryCategory' || $request->type == 'subCategory') {
+            $category = new \App\Models\Category();
+            if(isset($request->parentId) && is_numeric($request->parentId) && $request->parentId > 0) {
+                $category->parent_id = $request->parentId;
+            }
+            $category->category_name = $request->name;
+            $category->save();
+            $addType = 'category';
+        } elseif ($request->type == 'tag') {
+            $tag = new \App\Models\Tag();
+            $tag->tag_name = $request->name;
+            $tag->save();
+            $addType = 'tag';
+
+            CategoryTag::insert([
+                'category_id' => $request->parentId,
+                'tag_id' => $tag->id,
+            ]);
+        }
+
+        $categoriesArray = (new \App\Services\GetCategoriesService())->get();
+        return response()->json(array_merge([
+            'message' => "Successfully added {$addType}!"
+        ], $categoriesArray), 201);
     }
 
 }

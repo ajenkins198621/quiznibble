@@ -9,6 +9,7 @@ import { FormEventHandler } from 'react';
 import { EditCategoryProp, EditTagProp } from "@/types";
 import { router } from '@inertiajs/react'
 import axios from 'axios';
+import AddCategoryModal from './AddCategoryModal';
 
 type Props = {
     categories: EditCategoryProp[];
@@ -18,7 +19,7 @@ export default function CreateQuestionsForm({
     categories,
     subCategories,
 }: Props) {
-
+    const [availableCategories, setAvailableCategories] = useState<EditCategoryProp[]>(categories);
     const [availableSubCategories, setAvailableSubCategories] = useState<EditCategoryProp[]>([]);
     const [availableTags, setAvailableTags] = useState<EditTagProp[]>([]);
 
@@ -33,6 +34,12 @@ export default function CreateQuestionsForm({
     const [submitting, setSubmitting] = useState<boolean>(false);
     const [successMessage, setSuccessMessage] = useState<string>('');
 
+    const [modalData, setModalData] = useState<any>({
+        show: false,
+        type: '',
+        partentId: -1,
+    });
+
 
     const refreshForm = () => {
         setSelectedCategory('');
@@ -43,14 +50,19 @@ export default function CreateQuestionsForm({
         setCode('');
     }
 
-    useEffect(() => {
-
+    const handleCategoriesChange = (categories: EditCategoryProp[] = [], subCategories: EditCategoryProp[]) => {
+        if (categories.length > 0) {
+            setAvailableCategories(categories);
+        }
         if (selectedCategory !== '') {
             setAvailableSubCategories(subCategories.filter(subCategory => subCategory.parent_id == Number(selectedCategory)));
 
             if (selectedSubCategory !== '') {
+                console.log({
+                    subCategories
+                })
                 const subCategory = subCategories.filter(subCategory => subCategory.id == Number(selectedSubCategory))[0];
-                if (typeof subCategory.tags !== "undefined" && subCategory.tags.length > 0) {
+                if (subCategory && typeof subCategory.tags !== "undefined" && subCategory.tags.length > 0) {
                     setAvailableTags(subCategory.tags);
                 }
             } else {
@@ -64,6 +76,10 @@ export default function CreateQuestionsForm({
             setAvailableSubCategories([]);
             setAvailableTags([]);
         }
+    }
+
+    useEffect(() => {
+        handleCategoriesChange([], subCategories);
     }, [selectedCategory, selectedSubCategory, selectedTag]);
 
 
@@ -85,7 +101,15 @@ export default function CreateQuestionsForm({
                 setSuccessMessage(res.data.message);
                 refreshForm();
             })
-      }
+    }
+
+    const handleModal = (type: 'primaryCategory' | 'subCategory' | 'tag', parentId: number = -1) => {
+        setModalData({
+            show: true,
+            type: type,
+            partentId: parentId ? parentId : -1,
+        });
+    }
 
 
     return (
@@ -121,7 +145,7 @@ export default function CreateQuestionsForm({
                     >
                         <option value="">--- Select Primary Category ---</option>
                         {
-                            categories.map((category) => (
+                            availableCategories.map((category) => (
                                 <option
                                     key={category.id}
                                     value={category.id}
@@ -131,9 +155,11 @@ export default function CreateQuestionsForm({
                             ))
                         }
                     </select>
+                    <br />
+                    <a onClick={() => handleModal('primaryCategory')} className="text-blue-500 hover:text-blue-800 text-sm underline  cursor-pointer">Add Primary Category</a>
                 </div>
                 {
-                    availableSubCategories.length > 0 && (
+                    !!selectedCategory && (
                         <div>
                             <InputLabel htmlFor="subCategory" value="">
                                 Sub Category <sup className='text-red-500'>*</sup>
@@ -158,13 +184,15 @@ export default function CreateQuestionsForm({
                                     ))
                                 }
                             </select>
+                            <br />
+                            <a onClick={() => handleModal('subCategory', Number(selectedCategory))} className="text-blue-500 hover:text-blue-800 text-sm underline cursor-pointer">Add Sub Category</a>
                         </div>
                     )
                 }
 
 
                 {
-                    availableTags.length > 0 && (
+                    !!selectedCategory && !!selectedSubCategory && (
                         <div>
                             <InputLabel htmlFor="tag" value="">
                                 Tag <sup className='text-red-500'>*</sup>
@@ -189,6 +217,9 @@ export default function CreateQuestionsForm({
                                     ))
                                 }
                             </select>
+                            <br />
+                            <a onClick={() => handleModal('tag', Number(selectedSubCategory))} className="text-blue-500 hover:text-blue-800 text-sm underline cursor-pointer">Add Tag</a>
+
                         </div>
                     )
                 }
@@ -270,6 +301,18 @@ export default function CreateQuestionsForm({
 
 
             </form>
+
+            <AddCategoryModal
+                show={modalData.show}
+                type={modalData.type}
+                parentId={modalData.partentId}
+                onClose={(categoryData) => {
+                    if (categoryData && categoryData.categories && categoryData.subCategories) {
+                        handleCategoriesChange(categoryData.categories, categoryData.subCategories);
+                    }
+                    setModalData({ show: false, type: '', partentId: -1 });
+                }}
+            />
         </section>
     )
 }
