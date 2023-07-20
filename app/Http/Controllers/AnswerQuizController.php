@@ -27,7 +27,8 @@ class AnswerQuizController extends Controller
             'answers.*.is_correct' => 'required|boolean',
         ]);
 
-        $userId = auth()->id();
+        // $userId = auth()->id();
+        $userId = 1; // TODO: Get the authenticated user ID
 
         $this->userQuestionResponseService->store($userId, $data['answers']);
 
