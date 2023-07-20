@@ -18,7 +18,7 @@ export default function Dashboard({ auth }: PageProps) {
                     </div>
                 </div>
             </div>
-            <div className="pt-12">
+            <div className="pt-12 mb-12">
                 <div className="max-w-xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <Container />
