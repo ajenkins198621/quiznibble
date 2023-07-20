@@ -99,66 +99,8 @@ Route::get('get-quiz', function(Request $request) {
     ->get();
     return response()->json([
         'questions' => $questions,
-        'userStreak' => (new UserStreakService($userId))->getStreak(),
+        'userStreak' => (new UserStreakService())->getStreak($userId),
     ]);
 });
 
-Route::post('answer-quiz', function(Request $request) {
-    $data = $request->validate([
-        'answers' => 'required|array',
-        'answers.*.question_id' => 'required|exists:questions,id',
-        'answers.*.is_correct' => 'required|boolean',
-    ]);
-
-    $userId = 1; // TODO move to actual user
-
-    foreach ($data['answers'] as $answer) {
-        $existing = \App\Models\UserQuestionResponse::where([
-            'user_id' => $userId,
-            'question_id' => $answer['question_id']
-        ])->first();
-        if($existing) {
-            $newCorrectCount = $answer['is_correct'] ? $existing->correct_count + 1 : $existing->correct_count;
-            $newIncorrectCount = $answer['is_correct'] ? $existing->incorrect_count : $existing->incorrect_count + 1;
-            $newAttemptCount = $existing->attempt_count + 1;
-            $existing->update([
-                'correct_count' => $newCorrectCount,
-                'incorrect_count' => $newIncorrectCount,
-                'attempt_count' => $newAttemptCount,
-            ]);
-        } else {
-            \App\Models\UserQuestionResponse::insert([
-                'user_id' => $userId,
-                'question_id' => $answer['question_id'],
-                'correct_count' => $answer['is_correct'] ? 1 : 0,
-                'incorrect_count' => $answer['is_correct'] ? 0 : 1,
-                'attempt_count' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-    }
-
-    // TODO Add this to a listener at some point with an event tied to it
-    $userStreakService = new UserStreakService($userId);
-    $userStreakService->update();
-
-    // Return a response indicating success
-    return response()->json([
-        'message' => 'Responses saved successfully.',
-        'userStreak' => $userStreakService->getStreak(),
-    ], 201);
-
-
-});
-
-Route::get('/test-update-streak', function(Request $request) {
-    $userId = 1; // TODO move to actual user
-    $userStreakService = new UserStreakService($userId);
-    $userStreakService->update();
-    return response()->json([
-        'message' => 'Streak updated successfully.',
-        'userStreak' => $userStreakService->getStreak(),
-    ], 201);
-});
+Route::post('answer-quiz', [\App\Http\Controllers\AnswerQuizController::class, 'store']);

@@ -7,16 +7,10 @@ use Carbon\Carbon;
 
 class UserStreakService
 {
-    private int $userId;
-    public function __construct(int $userId)
-    {
-        $this->userId = $userId;
-    }
-
-    public function getStreak() : int
+    public function getStreak(int $userId) : int
     {
         $streak = UserStreak::select('streak')
-            ->where('user_id', $this->userId)
+            ->where('user_id', $userId)
             ->first();
         if(!$streak) {
             return 0;
@@ -24,10 +18,10 @@ class UserStreakService
         return $streak->streak;
     }
 
-    public function update() : void
+    public function update(int $userId) : void
     {
         $userStreak = UserStreak::firstOrCreate(
-            ['user_id' => $this->userId],
+            ['user_id' => $userId],
             ['streak' => 0, 'last_quiz_date' => now()->subDay()]
         );
 
