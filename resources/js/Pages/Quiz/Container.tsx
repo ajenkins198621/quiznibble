@@ -106,6 +106,7 @@ function Container() {
                 <div className='flex justify-between items-center'>
                     <span className='text-gray-200'>⭐️ {usersStreak} day streak</span>
                     <div className="radial-progress bg-gray-300 text-primary-content border-4 border-gray-200" style={{
+                        // @ts-ignore
                         "--value": currentProgress,
                         "--size": "3.5rem"
                     }}>
