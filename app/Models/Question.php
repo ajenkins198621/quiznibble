@@ -14,6 +14,11 @@ class Question extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function grandparentCategory()
+    {
+        return $this->belongsTo(Category::class, 'category_id', 'id');
+    }
+
     public function questionType()
     {
         return $this->belongsTo(QuestionType::class);

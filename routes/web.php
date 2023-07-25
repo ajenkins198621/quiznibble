@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\EditQuestionsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ViewDashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Answer;
+use App\Models\Category;
 use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -30,10 +32,9 @@ Route::get('/', function () {
 });
 
 Route::prefix('dashboard')->middleware(['auth', 'verified'])->group(function () {
-
-    Route::get('/', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/', [ViewDashboardController::class, 'viewDashboard'])->name('dashboard');
+    Route::get('/quiz/{mainCategoryId}', [ViewDashboardController::class, 'viewDashboard']);
+    Route::get('/quiz/{mainCategoryId}/{subCategoryId}', [ViewDashboardController::class, 'viewDashboard']);
 
     Route::prefix('questions')->group(function() {
         Route::get('/edit-questions', [EditQuestionsController::class, 'getQuestions'])->name('dashboard.questions.edit-questions');

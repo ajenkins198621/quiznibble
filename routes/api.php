@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\User;
 use App\Models\UserQuestionResponse;
+use App\Services\GetQuizService;
 use App\Services\UserStreakService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -40,67 +41,25 @@ Route::get('/get-categories', function(Request $request) {
 });
 
 
-Route::get('get-quiz', function(Request $request) {
+Route::prefix('get-quiz')->group(function() {
 
-
-    function getQuestionIds(User $user) {
-        // Step 1: Get 4 questions user hasn't answered before
-        $newQuestions = \App\Models\Question::select('id')->whereNotIn('id', function($query) use ($user) {
-            $query->select('question_id')
-                ->from('user_question_responses')
-                ->where('user_id', $user->id);
-        })->inRandomOrder()->limit(4)->get();
-
-        // Get the IDs of the 4 worst-answered questions
-        $worstQuestionIds = UserQuestionResponse::where('user_id', $user->id)
-            ->select('question_id')
-            ->selectRaw('(correct_count / attempt_count) as success_rate')
-            ->orderBy('success_rate', 'asc')
-            ->limit(4)
-            ->pluck('question_id');
-
-        // Get the Question models for these IDs
-        $poorlyAnsweredQuestions = \App\Models\Question::whereIn('id', $worstQuestionIds)->get();
-
-
-        // Step 3: Get the remaining questions at random
-        $NUM_QUESTIONS = 12;
-        $randomQuestions = \App\Models\Question::select('id')
-            ->whereNotIn('id', $newQuestions->pluck('id')
-                ->concat($poorlyAnsweredQuestions->pluck('id'))
-            )
-            ->inRandomOrder()
-            ->limit($NUM_QUESTIONS - $newQuestions->count() - $poorlyAnsweredQuestions->count())
-            ->get();
-
-        // Combine all questions
-        $quizQuestions = $poorlyAnsweredQuestions->concat($newQuestions)->concat($randomQuestions);
-
-        return $quizQuestions->pluck('id');
+    function getQuiz(int $mainCategory = -1, int $subCategory = -1) {
+        $quizData = (new GetQuizService())->getQuiz(1, $mainCategory, $subCategory);
+        return response()->json($quizData);
     }
+    Route::get('/', function(Request $request) {
+        return getQuiz();
+    });
 
-    $userId = 1; // TODO move to actual user
+    Route::get('/{mainCategory}', function(Request $request, int $mainCategory) {
+        return getQuiz($mainCategory);
+    });
 
-    $questions = \App\Models\Question::select([
-        'id',
-        'question',
-        'category_id',
-        'question_type_id',
-        'hint',
-    ])
-    ->with([
-        'answers:id,question_id,answer,is_correct',
-        'category:id,parent_id,category_name',
-        'category.parent:id,parent_id,category_name',
-        'questionType:id,question_type',
-        'tags:id,tag_name',
-    ])
-    ->whereIn('id', getQuestionIds(User::find($userId)))
-    ->get();
-    return response()->json([
-        'questions' => $questions,
-        'userStreak' => (new UserStreakService())->getStreak($userId),
-    ]);
+    Route::get('/{mainCategory}/{subCategory}', function(Request $request, int $mainCategory, int $subCategory) {
+        return getQuiz($mainCategory, $subCategory);
+    });
+
 });
+
 
 Route::post('answer-quiz', [\App\Http\Controllers\AnswerQuizController::class, 'store']);

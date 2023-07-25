@@ -3,12 +3,19 @@ import Question from './Question';
 import { Questions } from '@/types/quiz';
 import Category from './Category';
 
+type Props = {
+    mainCategoryId: number;
+    subCategoryId: number;
+}
 
-function Container() {
+function Container({
+    mainCategoryId,
+    subCategoryId
+}: Props) {
 
     const baseUrl = location.protocol + '//' + location.host;
 
-
+    const [loading, setLoading] = useState<boolean>(true);
     const [currentQuestions, setCurrentQuestions] = useState<Questions>([]);
     const [currentQuestionIdx, setCurrentQuestionIdx] = useState<number>(0);
     const [answeredQuestions, setAnsweredQuestions] = useState<{
@@ -32,7 +39,7 @@ function Container() {
         if (currentQuestions.length > 0) {
             return;
         }
-        fetch(`${baseUrl}/api/get-quiz`)
+        fetch(`${baseUrl}/api/get-quiz/${mainCategoryId}/${subCategoryId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error, status = ${response.status}`);
@@ -46,6 +53,7 @@ function Container() {
                 const { questions, userStreak } = data;
                 setCurrentQuestions(questions)
                 setUsersStreak(userStreak);
+                setLoading(false);
             })
             .catch(error => console.error('Error fetching data', error));
 
@@ -91,12 +99,21 @@ function Container() {
 
     const currentProgress = Math.floor(currentQuestionIdx / currentQuestions.length * 100);
 
-    if (currentQuestions.length === 0) return (
+    if (loading) return (
         <div className='flex justify-center items-center p-6'>
             <span className="loading loading-ring loading-lg" />
         </div>
 
     );
+
+    if (currentQuestions.length === 0) return (
+        <div className='p-6 text-center'>
+            <p className='strong'>NO QUESTIONS FOUND!</p>
+            <p>Try another category...</p>
+        </div>
+
+    );
+
 
     const currentQuestion = currentQuestions[currentQuestionIdx];
 
