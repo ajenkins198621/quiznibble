@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
                        ->update(['streak' => 0]);
         })
             ->timezone('America/Denver')
-            ->dailyAt('23:59');
+            ->dailyAt('17:59');
     }
 
     /**
