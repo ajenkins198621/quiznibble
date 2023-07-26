@@ -4,6 +4,7 @@ export type Question = {
     answers: Answer[];
     category: Category;
     category_id: number;
+    detail_url: null|string;
     hint: string;
     id: number;
     question: string;

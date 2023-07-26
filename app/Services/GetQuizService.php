@@ -18,6 +18,7 @@ class GetQuizService {
             'category_id',
             'question_type_id',
             'hint',
+            'detail_url',
         ])
         ->with([
             'answers:id,question_id,answer,is_correct',

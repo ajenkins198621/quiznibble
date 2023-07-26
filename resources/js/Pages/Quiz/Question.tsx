@@ -69,6 +69,14 @@ function Question(props: IProps) {
                     </div>
                 ))
             }
+
+            {
+                question.detail_url && (
+                    <div className="text-right">
+                        <a href={question.detail_url} target="_blank" className="text-blue-500 hover:text-blue-700">More Info</a>
+                    </div>
+                )
+            }
         </div>
     )
 }
