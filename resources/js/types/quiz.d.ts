@@ -36,3 +36,10 @@ export type Tag = {
     id: number;
     tag_name: string;
 }
+
+export type UserStreak = {
+    streak: number;
+    day_score: number;
+    week_score: number;
+    total_score: number;
+}

@@ -39,7 +39,7 @@ class GetQuizService {
     {
 
         // For debugging can change this!
-        $NUM_QUESTIONS_PER_SECTION = 4;
+        $NUM_QUESTIONS_PER_SECTION = 1;
 
         $categoryIdToUse = 1;
         if($subCategoryId != -1) {
