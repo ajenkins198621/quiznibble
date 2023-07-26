@@ -17,6 +17,15 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             UserStreak::where('last_quiz_date', '<', now()->startOfDay())
                        ->update(['streak' => 0]);
+
+            $update = ['day_score' => 0];
+
+            if(now()->dayOfWeek === 1) {
+                $update['week_score'] = 0;
+            }
+            UserStreak::where('day_count', '>', 0)
+                ->orWhere('week_count', '>', 0)
+                ->update($update);
         })
             ->timezone('America/Denver')
             ->dailyAt('17:59');
