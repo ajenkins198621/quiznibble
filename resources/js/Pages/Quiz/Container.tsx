@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Question from './Question';
 import { Questions } from '@/types/quiz';
 import Category from './Category';
+import axios from 'axios';
 
 type Props = {
     mainCategoryId: number;
@@ -70,31 +71,24 @@ function Container({
                 is_correct: answeredQuestions[question_id] ? 1 : 0
             }
         });
-        fetch(`${baseUrl}/api/answer-quiz`, {
-            method: 'POST', // Specify the method
-            headers: {
-                'Content-Type': 'application/json',
-                // Include your authentication headers. If you're using Laravel Sanctum or Passport, for example,
-                // you might need to include a Bearer token here.
-            },
-            body: JSON.stringify({ answers }), // Convert the JavaScript object to a JSON string
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json(); // This returns a promise
-        }).then((data: {
-            message: string,
-            userStreak: number
-        }) => {
-            const { userStreak } = data;
-            setUsersStreak(userStreak);
-        }).catch(e => {
-            alert('There was an error submitting the results')
-            if (e instanceof Error) {
-                console.error(`There was an error with the fetch request: ${e.message}`);
-            }
-        });
+
+        axios.post(`${baseUrl}/api/answer-quiz`, {
+            answers,
+        })
+            .then((response: {
+                data: {
+                    message: string,
+                    userStreak: number
+                }
+            }) => {
+                setUsersStreak(response.data.userStreak);
+            })
+            .catch(e => {
+                alert('Something went wrong. Please try again later.');
+                if (e instanceof Error) {
+                    console.error(`There was an error with the fetch request: ${e.message}`);
+                }
+            });
     }
 
     const currentProgress = Math.floor(currentQuestionIdx / currentQuestions.length * 100);
