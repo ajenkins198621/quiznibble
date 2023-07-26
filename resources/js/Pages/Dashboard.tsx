@@ -88,7 +88,7 @@ export default function Dashboard({
                                                 setQuizEnabled(false);
                                             }}
                                         >
-                                            <option value={-1}>Select Sub Category</option>
+                                            <option value={-1}>All Sub Categories</option>
                                             {
                                                 categories.find((category) => category.id === selectedCategoryId)?.sub_categories.map((subCategory) => (
                                                     <option key={subCategory.id} value={subCategory.id}>{subCategory.category_name}</option>
