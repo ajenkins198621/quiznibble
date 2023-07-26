@@ -15,7 +15,8 @@ return new class extends Migration
             $table->integer('day_score')->default(0)->after('last_quiz_date');
             $table->integer('week_score')->default(0)->after('day_score');
             $table->integer('total_score')->default(0)->after('week_score');
-
+            $table->integer('day_score_record')->default(0)->after('total_score');
+            $table->integer('week_score_record')->default(0)->after('day_score_record');
         });
     }
 
