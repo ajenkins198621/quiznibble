@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Question from './Question';
-import { Questions } from '@/types/quiz';
+import { Questions, UserStreak } from '@/types/quiz';
 import Category from './Category';
 import axios from 'axios';
 
@@ -28,7 +28,12 @@ function Container({
     const [submitBtnEnabled, setSubmitBtnEnabled] = useState<boolean>(false);
     const [nextBtnEnabled, setNextBtnEnabled] = useState<boolean>(false);
     const [currentHint, setCurrentHint] = useState<string>("");
-    const [usersStreak, setUsersStreak] = useState<number>(0);
+    const [userStats, setUserStats] = useState<UserStreak>({
+        streak: 0,
+        day_score: 0,
+        week_score: 0,
+        total_score: 0
+    });
     const [tagsThatNeedReview, setTagsThatNeedReview] = useState<{
         [key: string]: {
             tag_name: string,
@@ -49,11 +54,11 @@ function Container({
             })
             .then((data: {
                 questions: Questions,
-                userStreak: number
+                userStreak: UserStreak
             }) => {
                 const { questions, userStreak } = data;
                 setCurrentQuestions(questions)
-                setUsersStreak(userStreak);
+                setUserStats(userStreak);
                 setLoading(false);
             })
             .catch(error => console.error('Error fetching data', error));
@@ -78,10 +83,10 @@ function Container({
             .then((response: {
                 data: {
                     message: string,
-                    userStreak: number
+                    userStreak: UserStreak
                 }
             }) => {
-                setUsersStreak(response.data.userStreak);
+                setUserStats(response.data.userStreak);
             })
             .catch(e => {
                 alert('Something went wrong. Please try again later.');
@@ -115,7 +120,13 @@ function Container({
         <>
             <div className={`pl-6 pt-4 pr-4${!currentQuestion ? ' pb-4' : ''} text-gray-900 flex flex-col bg-gray-800 text-gray-200`}>
                 <div className='flex justify-between items-center'>
-                    <span className='text-gray-200'>⭐️ {usersStreak} day streak</span>
+                    <div className='flex flex-col'>
+                        <span className='text-gray-200'>⭐️ {userStats.streak} day streak</span>
+                        <span className='text-gray-200'>⭐️ {userStats.day_score} day score</span>
+                        <span className='text-gray-200'>⭐️ {userStats.week_score} week score</span>
+                        <span className='text-gray-200'>⭐️ {userStats.total_score} total score</span>
+                    </div>
+
                     <div className="radial-progress bg-gray-300 text-primary-content border-4 border-gray-200" style={{
                         // @ts-ignore
                         "--value": currentProgress,
@@ -181,7 +192,7 @@ function Container({
 
                                                 // Update tags that need more practice
                                                 const questionTags = currentQuestion.tags;
-                                                const newTagsThatNeedReview = {...tagsThatNeedReview};
+                                                const newTagsThatNeedReview = { ...tagsThatNeedReview };
                                                 questionTags.forEach(tag => {
                                                     if (typeof newTagsThatNeedReview[tag.id] === "undefined") {
                                                         newTagsThatNeedReview[tag.id] = {
