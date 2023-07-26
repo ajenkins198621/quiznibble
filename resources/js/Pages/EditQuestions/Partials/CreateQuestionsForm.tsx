@@ -41,10 +41,12 @@ export default function CreateQuestionsForm({
     });
 
 
-    const refreshForm = () => {
-        setSelectedCategory('');
-        setSelectedSubCategory('');
-        setSelectedTag('');
+    const refreshForm = (fullRefresh = true) => {
+        if(fullRefresh) {
+            setSelectedCategory('');
+            setSelectedSubCategory('');
+            setSelectedTag('');
+        }
         setQuestionJson('');
         setMediaUrl('');
         setCode('');
@@ -99,7 +101,7 @@ export default function CreateQuestionsForm({
             .then(res => {
                 setSubmitting(false);
                 setSuccessMessage(res.data.message);
-                refreshForm();
+                refreshForm(false);
             })
     }
 
