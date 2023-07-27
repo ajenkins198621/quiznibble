@@ -33,14 +33,14 @@ function Question(props: IProps) {
 
     const getSelectedClasses = (idx: number, is_correct: boolean): string => {
         if (selectedAnswer !== idx) {
-            if(submitted) {
+            if (submitted) {
                 return "bg-gray-300 hover:bg-gray-300 text-gray-500 hover:text-gray-500 hover:border-gray-100 cursor-not-allowed";
             } else {
                 return "";
             }
         }
         // Selected
-        if(!submitted) {
+        if (!submitted) {
             return "bg-gray-700 hover:bg-gray-700 border-gray-800 hover:border-gray-800 text-white animate-pulse";
         }
         if (selectedAnswer === idx && is_correct) {
@@ -53,12 +53,12 @@ function Question(props: IProps) {
         <div>
             <h2 className="text-xl text-gray-600 font-black leading-tight mt-4">{question.question}</h2>
             {
-                answers.map(({answer, is_correct}, i) => (
+                answers.map(({ answer, is_correct }, i) => (
                     <div
                         key={i}
                         className={`w-full p-3 border my-4 rounded-lg hover:border-gray-800 hover:bg-gray-100 cursor-pointer ${getSelectedClasses(i, is_correct == 1)}`}
                         onClick={() => {
-                            if(submitted) {
+                            if (submitted) {
                                 return;
                             }
                             setSelectedAnswer(i);
@@ -76,7 +76,12 @@ function Question(props: IProps) {
                         <a href={question.detail_url} target="_blank" className="text-blue-500 hover:text-blue-700">More Info</a>
                     </div>
                 )
+
             }
+            <div className="text-right">
+                {/* ASK GOOGLE - Link to google with question */}
+                <a href={`https://www.google.com/search?q=${question.question}`} target="_blank" className="text-blue-500 hover:text-blue-700">Ask Google</a>
+            </div>
         </div>
     )
 }

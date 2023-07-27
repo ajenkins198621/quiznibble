@@ -15,6 +15,10 @@ type Props = PageProps & {
             category_name: string;
             parent_id: number;
         }[]
+        question_count: null | {
+            category_id: number;
+            question_count: number;
+        }
     }[];
 }
 
@@ -31,11 +35,12 @@ export default function Dashboard({
     useEffect(() => {
         setSelectedCategoryId(mainCategoryId);
         setSelectedSubCategoryId(subCategoryId);
-        if(mainCategoryId !== -1) {
+        if (mainCategoryId !== -1) {
             setQuizEnabled(true);
         }
     }, [mainCategoryId, subCategoryId]);
 
+    console.log({ categories });
 
 
     return (
@@ -54,76 +59,42 @@ export default function Dashboard({
             </div> */}
             <div className="pt-12 mb-12">
                 <div className="max-w-xl mx-auto sm:px-6 lg:px-8">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        {
+                            !quizEnabled ? (
+                                <div className='p-6'>
 
-                    <div className="flex items-center mb-4">
-                        <div className='w-1/5'>
-                            Select:
-                        </div>
-                        <div className='w-3/5 flex'>
-                            <div className='w-1/2 pr-2'>
-                                <select
-                                    className='select select-bordered w-full max-w-xs'
-                                    value={selectedCategoryId}
-                                    onChange={(e) => {
-                                        setSelectedCategoryId(parseInt(e.target.value))
-                                        setQuizEnabled(false);
-                                    }}
-                                >
-                                    <option value={-1}>Select Category</option>
+                                    <h2 className='text-lg font-medium text-gray-900 mb-4 border-b pb-2'>Select a quiz:</h2>
+                                    <div className='flex flex-col space-y-6'>
                                     {
-                                        categories.map((category) => (
-                                            <option key={category.id} value={category.id}>{category.category_name}</option>
+                                        categories.filter(({question_count}) => {
+                                            if(!question_count || !question_count.question_count) return false;
+                                            return true;
+                                        }).map((category) => (
+                                            <button
+                                                key={category.id}
+                                                className="btn btn-block btn-accent"
+                                                onClick={() => {
+                                                    setSelectedCategoryId(category.id);
+                                                    setQuizEnabled(true);
+                                                }}
+                                            >
+                                                {category.category_name}
+                                            </button>
                                         ))
                                     }
-                                </select>
-                            </div>
-                            <div className='w-1/2 pl-2'>
-                                {
-                                    selectedCategoryId !== -1 && (
-                                        <select
-                                            className='select select-bordered w-full max-w-xs'
-                                            value={selectedSubCategoryId}
-                                            onChange={(e) => {
-                                                setSelectedSubCategoryId(parseInt(e.target.value))
-                                                setQuizEnabled(false);
-                                            }}
-                                        >
-                                            <option value={-1}>All Sub Categories</option>
-                                            {
-                                                categories.find((category) => category.id === selectedCategoryId)?.sub_categories.map((subCategory) => (
-                                                    <option key={subCategory.id} value={subCategory.id}>{subCategory.category_name}</option>
-                                                ))
-                                            }
-                                        </select>
-                                    )
-                                }
-                            </div>
+                                    </div>
 
-                        </div>
-                        <div className='w-1/5 pl-2'>
-
-                            <button
-                                className="btn btn-secondary"
-                                disabled={selectedCategoryId === -1}
-                                onClick={() => setQuizEnabled(true)}
-                            >
-                                Take Quiz
-                            </button>
-
-
-                        </div>
-                    </div>
-
-                    {
-                        quizEnabled && (
-                            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                </div>
+                            )
+                            : (
                                 <Container
                                     mainCategoryId={selectedCategoryId}
                                     subCategoryId={selectedSubCategoryId}
                                 />
-                            </div>
-                        )
-                    }
+                            )
+                        }
+                    </div>
                 </div>
             </div>
 

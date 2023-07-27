@@ -13,7 +13,10 @@ class ViewDashboardController extends Controller
         return Category::select([
             'id', 'category_name'
         ])
-            ->with('subCategories:id,category_name,parent_id')
+            ->with([
+                'subCategories:id,category_name,parent_id',
+                'questionCount'
+            ])
             ->whereNull('parent_id')
             ->get()
             ->toArray();
