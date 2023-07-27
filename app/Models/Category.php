@@ -35,4 +35,9 @@ class Category extends Model
         return $this->belongsToMany(Tag::class, 'category_tags');
     }
 
+    public function questionCount()
+    {
+        return $this->hasOne(CategoryQuestionCount::class);
+    }
+
 }
