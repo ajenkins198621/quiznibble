@@ -9,19 +9,28 @@ use App\Models\Question;
 class CategoryQuestionCountService {
 
     public function updateAll() {
-        $categoryIds = Question::select([
-            'category_id'
+        $categories = Question::select([
+            'category_id',
+
         ])
-        ->get()
-        ->pluck('category_id')
-        ->toArray();
+            ->with([
+                'category:id,parent_id',
+            ])
+            ->get()
+            ->toArray();
 
         $counts = [];
-        foreach($categoryIds as $categoryId) {
-            if(!isset($counts[$categoryId])) {
-                $counts[$categoryId] = 0;
+        foreach($categories as $category) {
+            if(!isset($counts[$category['category_id']])) {
+                $counts[$category['category_id']] = 0;
             }
-            $counts[$categoryId]++;
+            if(isset($category['category']['parent_id']) && !is_null($category['category']['parent_id'])) {
+                if(!isset($counts[$category['category']['parent_id']])) {
+                    $counts[$category['category']['parent_id']] = 0;
+                }
+                $counts[$category['category']['parent_id']]++;
+            }
+            $counts[$category['category_id']]++;
         }
 
         $insert = [];

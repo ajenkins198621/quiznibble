@@ -11,4 +11,11 @@ class CategoryQuestionCount extends Model
 
     public $timestamps = false;
 
+    protected $primaryKey = 'category_id';
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
 }
