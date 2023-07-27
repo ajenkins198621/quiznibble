@@ -32,11 +32,24 @@ class AnswerQuizController extends Controller
 
         $this->userQuestionResponseService->store($userId, $data['answers']);
 
-        $this->userStreakService->update($userId);
+        $this->userStreakService->update($userId, $this->_getScore($data['answers']));
 
         return response()->json([
             'message' => 'Responses saved successfully.',
             'userStreak' => $this->userStreakService->getStreak($userId),
         ], 201);
+    }
+
+    private function _getScore($answers) {
+        $total_count = 0;
+        $correct_count = 0;
+        foreach ($answers as $answer) {
+            $total_count++;
+            if ($answer['is_correct']) {
+                $correct_count++;
+            }
+        }
+        // Return as a single digit number which is the percentage of correct answers rounded down
+        return floor($correct_count / $total_count * 10);
     }
 }
