@@ -32,7 +32,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }: PageProps<
                         </>
                     )}
                 </div>
-                <div>
+                <div className="flex flex-col items-center mt-8">
                     <h1 className='text-xl text-gray-600'>Welcome to <strong className='text-white bg-red-500'>QuizNibble</strong>!</h1>
                     <p className="text-gray-600">Did you know a nibble is half a byte?</p>
                 </div>
