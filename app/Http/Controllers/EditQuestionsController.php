@@ -77,6 +77,9 @@ class EditQuestionsController extends Controller
             }
         }
 
+        // TODO should add this to a job/queue as it could take a while when the number of questions is large
+        (new \App\Services\CategoryQuestionCountService())->updateAll();
+
         return response()->json([
             'message' => "Successfully added {$questionCount} questions!"
         ], 201);
