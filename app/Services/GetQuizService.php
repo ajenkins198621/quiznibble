@@ -55,6 +55,13 @@ class GetQuizService {
             ->get())
             ->pluck('id');
 
+        // TODO optimize this if we get many inactive questions
+        // Flagged Question IDS
+        $inActiveQuestionIds = \App\Models\Question::select('id')
+            ->where('flagged', true)
+            ->get()
+            ->pluck('id');
+
         // Step 1: Get 4 questions user hasn't answered before
         $newQuestions = \App\Models\Question::select('id')
             ->whereNotIn('id', function($query) use ($user) {
@@ -63,12 +70,14 @@ class GetQuizService {
                     ->where('user_id', $user->id);
                 })
             ->whereIn('category_id',  $categoryIds)
+            ->whereNotIn('id', $inActiveQuestionIds)
             ->inRandomOrder()
             ->limit($NUM_QUESTIONS_PER_SECTION)
             ->get();
 
         // Get the IDs of the 4 worst-answered questions
         $worstQuestionIds = UserQuestionResponse::where('user_id', $user->id)
+            ->whereNotIn('question_id', $inActiveQuestionIds)
             ->select('question_id')
             ->selectRaw('(correct_count / attempt_count) as success_rate')
             ->orderBy('success_rate', 'asc')
@@ -85,6 +94,7 @@ class GetQuizService {
             ->whereNotIn('id', $newQuestions->pluck('id')
                 ->concat($poorlyAnsweredQuestions->pluck('id'))
             )
+            ->whereNotIn('id', $inActiveQuestionIds)
             ->whereIn('category_id',  $categoryIds)
             ->inRandomOrder()
             ->limit(($NUM_QUESTIONS_PER_SECTION * 3) - $newQuestions->count() - $poorlyAnsweredQuestions->count())

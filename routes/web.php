@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EditQuestionsController;
+use App\Http\Controllers\FlaggedQuestionsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ViewDashboardController;
 use Illuminate\Foundation\Application;
@@ -40,6 +41,8 @@ Route::prefix('dashboard')->middleware(['auth', 'verified'])->group(function () 
         Route::get('/edit-questions', [EditQuestionsController::class, 'getQuestions'])->name('dashboard.questions.edit-questions');
         Route::post('/add-question', [EditQuestionsController::class, 'addQuestion'])->name('dashboard.questions.add-question');
         Route::post('/add-category-or-tag', [EditQuestionsController::class, 'addCategoryOrTag'])->name('dashboard.questions.add-category-or-tag');
+        Route::get('/view-flagged', [FlaggedQuestionsController::class, 'getFlagged'])->name('dashboard.questions.view-flagged');
+        Route::patch('/edit-question/toggle-active', [EditQuestionsController::class, 'toggleActive'])->name('dashboard.questions.edit-question.toggle-active');
     });
 
 });

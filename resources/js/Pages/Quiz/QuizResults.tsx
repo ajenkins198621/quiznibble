@@ -5,7 +5,6 @@ type Props = {
     latestPointsEarned: number;
     currentQuestionsLength: number;
     tagsThatNeedReview: TagsThatNeedReviewType;
-    onResetQuiz: () => void;
 
 }
 

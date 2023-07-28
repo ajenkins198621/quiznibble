@@ -4,6 +4,7 @@ import { Questions, UserStreak } from '@/types/quiz';
 import Category from './Category';
 import axios from 'axios';
 import QuizResults from './QuizResults';
+import FlagQuestion from './FlagQuestion';
 
 type Props = {
     mainCategoryId: number;
@@ -243,6 +244,8 @@ function Container({
                                     </button>
                                 </div>
                             </div>
+                            <FlagQuestion questionId={currentQuestion.id} />
+
 
                             {
                                 currentHint !== "" && submitted ?
