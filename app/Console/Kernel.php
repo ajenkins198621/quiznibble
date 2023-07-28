@@ -20,11 +20,11 @@ class Kernel extends ConsoleKernel
 
             $update = ['day_score' => 0];
 
-            if(now()->dayOfWeek === 1) {
+            if(now()->dayOfWeek === 0) {
                 $update['week_score'] = 0;
             }
-            UserStreak::where('day_count', '>', 0)
-                ->orWhere('week_count', '>', 0)
+            UserStreak::where('day_score', '>', 0)
+                ->orWhere('week_score', '>', 0)
                 ->update($update);
         })
             ->timezone('America/Denver')

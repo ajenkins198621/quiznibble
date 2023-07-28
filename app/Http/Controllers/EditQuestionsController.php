@@ -13,11 +13,13 @@ use Inertia\Inertia;
 class EditQuestionsController extends Controller
 {
 
-    public function getQuestions() {
+    public function getQuestions()
+    {
         return Inertia::render('EditQuestions/EditQuestions', (new \App\Services\GetCategoriesService())->get());
     }
 
-    public function addQuestion(Request $request) : JsonResponse {
+    public function addQuestion(Request $request): JsonResponse
+    {
 
         $validator = Validator::make($request->all(), [
             'category_id' => 'required|exists:categories,id',
@@ -86,7 +88,8 @@ class EditQuestionsController extends Controller
     }
 
 
-    public function addCategoryOrTag (Request $request) : JsonResponse {
+    public function addCategoryOrTag(Request $request): JsonResponse
+    {
         $validator = Validator::make($request->all(), [
             'type' => 'in:primaryCategory,subCategory,tag',
             'parentId' => 'nullable|numeric',
@@ -101,9 +104,9 @@ class EditQuestionsController extends Controller
         }
 
         $addType = '';
-        if($request->type == 'primaryCategory' || $request->type == 'subCategory') {
+        if ($request->type == 'primaryCategory' || $request->type == 'subCategory') {
             $category = new \App\Models\Category();
-            if(isset($request->parentId) && is_numeric($request->parentId) && $request->parentId > 0) {
+            if (isset($request->parentId) && is_numeric($request->parentId) && $request->parentId > 0) {
                 $category->parent_id = $request->parentId;
             }
             $category->category_name = $request->name;
@@ -127,4 +130,27 @@ class EditQuestionsController extends Controller
         ], $categoriesArray), 201);
     }
 
+
+    public function toggleActive(Request $request)
+    {
+        $request->validate([
+            'questionId' => 'required|numeric|exists:questions,id',
+            'type' => 'required|in:active,flagged',
+            'value' => 'required|boolean',
+        ]);
+        Question::where('id', $request->questionId)->update([
+            $request->type => $request->value ? 1 : 0,
+        ]);
+        $question = Question::select([
+            'flagged',
+            'active'
+        ])
+            ->where('id', $request->questionId)->first();
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully updated question!',
+            'flagged' => $question->flagged,
+            'active' => $question->active,
+        ], 200);
+    }
 }

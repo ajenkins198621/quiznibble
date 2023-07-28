@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Question;
 use App\Models\User;
 use App\Models\UserQuestionResponse;
 use App\Services\GetQuizService;
@@ -59,6 +60,19 @@ Route::prefix('get-quiz')->group(function() {
         return getQuiz($mainCategory, $subCategory);
     });
 
+});
+
+// TODO this can be moved to the web route (this whole file can be actually) under a middleware
+Route::post("/questions/flag-question", function(Request $request) {
+    $request->validate([
+        'questionId' => 'required|integer|exists:questions,id',
+        'reason' => 'required|string|max:255'
+    ]);
+    Question::where('id', $request->questionId)
+        ->update([
+            'flagged' => true,
+            'flagged_reason' => $request->reason
+        ]);
 });
 
 

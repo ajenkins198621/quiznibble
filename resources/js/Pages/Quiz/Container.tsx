@@ -3,10 +3,19 @@ import Question from './Question';
 import { Questions, UserStreak } from '@/types/quiz';
 import Category from './Category';
 import axios from 'axios';
+import QuizResults from './QuizResults';
+import FlagQuestion from './FlagQuestion';
 
 type Props = {
     mainCategoryId: number;
     subCategoryId: number;
+}
+
+export type TagsThatNeedReviewType = {
+    [key: string]: {
+        tag_name: string,
+        wrongAnswers: number
+    }
 }
 
 function Container({
@@ -16,6 +25,7 @@ function Container({
 
     const baseUrl = location.protocol + '//' + location.host;
 
+    // TODO REARCHITECT THIS COMPONENT!!!
     const [loading, setLoading] = useState<boolean>(true);
     const [currentQuestions, setCurrentQuestions] = useState<Questions>([]);
     const [currentQuestionIdx, setCurrentQuestionIdx] = useState<number>(0);
@@ -34,12 +44,8 @@ function Container({
         week_score: 0,
         total_score: 0
     });
-    const [tagsThatNeedReview, setTagsThatNeedReview] = useState<{
-        [key: string]: {
-            tag_name: string,
-            wrongAnswers: number
-        }
-    }>({});
+    const [tagsThatNeedReview, setTagsThatNeedReview] = useState<TagsThatNeedReviewType>({});
+    const [latestPointsEarned, setLatestPointsEarned] = useState<number>(-1);
 
     useEffect(() => {
         if (currentQuestions.length > 0) {
@@ -83,10 +89,13 @@ function Container({
             .then((response: {
                 data: {
                     message: string,
-                    userStreak: UserStreak
+                    userStreak: UserStreak,
+                    pointsEarned: number,
                 }
             }) => {
-                setUserStats(response.data.userStreak);
+                const { userStreak, pointsEarned } = response.data;
+                setUserStats(userStreak);
+                setLatestPointsEarned(pointsEarned);
             })
             .catch(e => {
                 alert('Something went wrong. Please try again later.');
@@ -235,6 +244,8 @@ function Container({
                                     </button>
                                 </div>
                             </div>
+                            <FlagQuestion questionId={currentQuestion.id} />
+
 
                             {
                                 currentHint !== "" && submitted ?
@@ -248,31 +259,12 @@ function Container({
 
                         </>
                         :
-                        <div className='flex flex-col mt-4'>
-                            <div className='text-center text-xl border-b pb-4'>
-                                Your score is {Math.floor((score / currentQuestions.length) * 100)}%
-                            </div>
-                            {
-                                Object.keys(tagsThatNeedReview).length > 0 ?
-                                    <div className='mt-6'>
-                                        <div>The following tags could use some attention:</div>
-                                        <div className='flex flex-row flex-wrap'>
-                                            {
-                                                Object.keys(tagsThatNeedReview).map((key, idx) => {
-                                                    const tag = tagsThatNeedReview[key];
-                                                    return (
-                                                        <div key={idx} className='bg-blue-300 text-blue-900 px-4 py-1 m-1 rounded'>
-                                                            {tag.tag_name} ({tag.wrongAnswers} wrong answers)
-                                                        </div>
-                                                    )
-                                                })
-                                            }
-                                        </div>
-                                    </div>
-                                    :
-                                    null
-                            }
-                        </div>
+                        <QuizResults
+                            score={score}
+                            latestPointsEarned={latestPointsEarned}
+                            currentQuestionsLength={currentQuestions.length}
+                            tagsThatNeedReview={tagsThatNeedReview}
+                        />
                 }
             </div>
 

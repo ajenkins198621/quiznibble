@@ -27,9 +27,14 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 </NavLink>
                                 {
                                     user.id === 1 && (
-                                        <NavLink href={route('dashboard.questions.edit-questions')} active={route().current('dashboard.questions.edit-questions')}>
-                                            Edit Questions
-                                        </NavLink>
+                                        <>
+                                            <NavLink href={route('dashboard.questions.edit-questions')} active={route().current('dashboard.questions.edit-questions')}>
+                                                Edit Questions
+                                            </NavLink>
+                                            <NavLink href={route('dashboard.questions.view-flagged')} active={route().current('dashboard.questions.view-flagged')}>
+                                                Flagged Questions
+                                            </NavLink>
+                                        </>
                                     )
                                 }
                             </div>
