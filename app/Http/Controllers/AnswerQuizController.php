@@ -32,11 +32,13 @@ class AnswerQuizController extends Controller
 
         $this->userQuestionResponseService->store($userId, $data['answers']);
 
-        $this->userStreakService->update($userId, $this->_getScore($data['answers']));
+        $pointsEarned = $this->_getScore($data['answers']);
+        $this->userStreakService->update($userId, $pointsEarned);
 
         return response()->json([
             'message' => 'Responses saved successfully.',
             'userStreak' => $this->userStreakService->getStreak($userId),
+            'pointsEarned' => $pointsEarned,
         ], 201);
     }
 
